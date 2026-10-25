@@ -146,8 +146,8 @@ textarea{font-family:monospace;border:3px solid var(--edge);border-radius:10px;b
 .fg .bp.en img.hit{transform:scaleX(-1)}
 @keyframes bob{50%{transform:translateY(-5px)}}
 @keyframes bob2{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-5px)}}
-.fg .pl{position:absolute;top:10px;width:min(46%,280px);background:#2a1608d9;border:3px solid #ffd9a0;border-radius:14px;padding:6px 10px 8px;color:#fff;font-size:clamp(14px,2.8vw,19px);line-height:1.25;z-index:4;text-shadow:0 2px 0 #0008}
-.fg .pl .bar{height:16px;margin:5px 0 3px;border-radius:8px}
+.fg .pl{position:absolute;top:6px;width:min(34%,180px);background:#2a1608bf;border:2px solid #ffd9a0;border-radius:10px;padding:3px 7px 4px;color:#fff;font-size:clamp(11px,2.3vw,14px);line-height:1.2;z-index:1;pointer-events:none;text-shadow:0 1px 0 #0008}
+.fg .pl .bar{height:9px;margin:3px 0 2px;border-radius:5px;border-width:1px}
 .fg .pl small{font-size:inherit;opacity:.95}
 .fg .dmg{font-size:clamp(34px,7vw,54px)}
 .blog{background:#fff8e8;border:3px solid #8a5a2b;border-radius:14px;padding:10px 14px;font-size:clamp(16px,3.2vw,21px);min-height:50px;margin:10px 0;color:#4a2c10;font-weight:600;display:flex;align-items:center;justify-content:center;text-align:center}
@@ -618,7 +618,7 @@ const BGC={};
 const bgUrl=k=>BGC[k]||(BGC[k]=`url("data:image/svg+xml,${encodeURIComponent(bgSvg(k)).replace(/'/g,'%27')}")`);
 const BK=[.36,.44,.52,.6];
 function ff(hp,he){const e=D.e,ps=stg(D.p),st=D.t%3==2,mk=(o,c)=>o.replace('<img','<img class="'+(c?'hit':'')+'"');
- const pl=(side,n,lv,h,m)=>`<div class='pl' style='${side}:8px'><b>${n}</b> · Lv ${lv}${bar(h,m)}<small>❤️ ${Math.max(0,Math.ceil(h))} / ${m}</small></div>`;
+ const pl=(side,n,lv,h,m)=>`<div class='pl' style='${side}:6px'><b>${n}</b> · Lv ${lv}${bar(h,m)}<small>❤️ ${Math.max(0,Math.ceil(h))} / ${m}</small></div>`;
  v(`<h3>${DG[D.k][1]} ${DG[D.k][0]} · Floor ${D.f}</h3><div class='fg' style='background-image:${bgUrl(D.k)}'><div class='bp' style='--k:${BK[ps-1]};left:5%'>${mk(spr(D.p),hp)}</div><h2></h2><div class='bp en' style='--k:${BK[e.st-1]};right:5%'>${mk(spr({s:e.s,p:e.p,xp:0},e.st),he)}</div>${pl('left',SP[D.p.s][2]+' '+SP[D.p.s][0],D.pl,D.hp,D.mh)}${pl('right',SP[e.s][2]+' '+SP[e.s][0],D.el,e.hp,e.mh)}</div><div class='blog'>${D.log}</div>${D.over?`<div class='act'><button class='b fl' onclick='dsel(${D.k})'>✅ Continue</button></div>`:`<div class='act'><button class='b' onclick='act(0)'>⚔️<br>Attack</button><button class='b' ${st?'':'disabled'} onclick='act(1)'>🌟<br>Skill x3<small>${st?'READY!':'in '+(2-D.t%3)+' turn'+(2-D.t%3>1?'s':'')}</small></button><button class='b' ${D.h?'':'disabled'} onclick='act(2)'>💚<br>Heal<small>${D.h} left</small></button><button class='b fl' onclick='dsel(${D.k})'>🏃 Flee</button></div>`}`)}
 /* NAV */
 const TABS={home:['🏡','Home',home],inv:['📦','Inventory',inv],eggs:['🥚','Eggs',eggs],work:['💼','Work',work_],dun:['🏰','Dungeons',dun],set:['⚙️','Settings',setgs]};
