@@ -194,6 +194,20 @@ div:has(>.b.st.e){display:flex;gap:6px;justify-content:center;margin-bottom:8px}
 .cd .pi{font-size:12px;line-height:1.4}
 .cd .pi>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.35em}
 .cd .pst{display:flex;justify-content:center;gap:6px;overflow:visible!important;font-size:11.5px}
+/* even sprite boxes for pet pick lists */
+.gr.pk{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.gr.pk>.cd{display:flex;flex-direction:column;align-items:center}
+.gr.pk>.cd>img,.gr.pk>.cd>.gw>img{display:block;width:100%;height:90px;max-width:none;max-height:none;object-fit:contain;margin:0 auto 4px}
+.gr.pk>.cd>.gw{display:block;width:100%}
+.gr.pk>.cd>small{flex:1}
+.gr.pk>.cd>.b{margin-top:6px}
+/* inventory: 3 per row phone, 6 per row PC */
+.gr.pg3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gr.pg3>.cd{padding:6px 3px}
+.gr.pg3 .ps{height:clamp(70px,22vw,96px)}
+.gr.pg3 .pi{font-size:clamp(9px,2.55vw,12px)}
+.gr.pg3 .pst{gap:2px;font-size:clamp(8px,2.1vw,11.5px);white-space:nowrap}
+@media(min-width:760px){.gr.pg3{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.gr.pg3>.cd{padding:8px}.gr.pg3 .ps{height:96px}.gr.pg3 .pi{font-size:12px}.gr.pg3 .pst{gap:6px;font-size:11.5px}}
 </style></head><body>
 <div id="hd"><span>🥚 Kemono Pets</span><span id="co"></span></div>
 <div id="v"></div><div id="tt"></div>
@@ -278,7 +292,7 @@ function stk(){
 /* DUNGEON */
 function dun(){const ps=S.pets.filter(p=>!p.w);
  if(!ps.length)return v('<h3>Dungeon</h3><p>You need a pet (not at work) to explore!</p>');
- v(`<h3>🏰 Dungeon — Floor ${S.fl}</h3><p>Choose a fighter. Win battles for coins, XP and new eggs!</p><div class="gr">${ps.map(p=>`<div class="cd" onclick="fight(${p.i})">${spr(p)}<small>${SP[p.s][0]} S${stg(p)}</small></div>`).join('')}</div>`)}
+ v(`<h3>🏰 Dungeon — Floor ${S.fl}</h3><p>Choose a fighter. Win battles for coins, XP and new eggs!</p><div class="gr pk">${ps.map(p=>`<div class="cd" onclick="fight(${p.i})">${spr(p)}<small>${SP[p.s][0]} S${stg(p)}</small></div>`).join('')}</div>`)}
 function fight(i){const p=S.pets.find(x=>x.i==i),st=stg(p),e={s:R(5),p:R(5)},es=Math.min(4,1+(S.fl/4|0));
  e.st=es;e.mh=e.hp=25+S.fl*9;e.a=3+S.fl*1.5;
  D={p,hp:70+st*30,mh:70+st*30,a:12+st*7,e,h:3,t:0,log:`A wild ${SP[e.s][0]} appears! You strike first.`,over:0};ff()}
@@ -305,7 +319,7 @@ function panel(){const ps=S.pets.filter(p=>p.h&&!p.w),p=ps.find(x=>x.i==S.sel)||
  S.sel=p.i;const st=stg(p),nx=XP[st]||p.xp,pv=XP[st-1];document.querySelectorAll('.pt').forEach(d=>d.classList.toggle('sel',d.dataset.i==p.i));
  $('#pn').innerHTML=`<b>${SP[p.s][2]} ${SP[p.s][0]} (${PN[p.p]})</b> · Stage ${st}${st==4?' (Max)':''}<div class='bar'><i style='width:${st==4?100:(p.xp-pv)/(nx-pv)*100}%'></i></div><small>🍖 Fullness ${Math.round(p.f)}%</small><div><button class='b' onclick='feed()'>🍖 Feed (5🪙)</button><button class='b' onclick='petIt()'>💗 Pet</button>${st>=2?`<button class='b' onclick='work(${p.i})'>💼 Work</button>`:''}</div><small>Tap pets to select. Manage pets in the Inventory.</small>`}
 function works(){const ps=S.pets.filter(p=>p.w),tot=S.pets.reduce((a,p)=>a+pend(p),0);
- $('#wk').innerHTML=`<p>Send Stage 2+ pets to work from the Inventory. They earn coins per minute, even offline (max 8h). Well-fed pets earn more!</p><button class='b' onclick='collect()'>Collect ${Math.floor(tot)}🪙</button><div class='gr'>${ps.slice(0,60).map(p=>`<div class='cd'>${spr(p)}<small>${SP[p.s][0]} S${stg(p)}<br>${rate(p).toFixed(1)}/min · +${Math.floor(pend(p))}🪙</small><br><button class='b s' onclick='recall(${p.i})'>Recall</button></div>`).join('')||'<p>No pets at work.</p>'}</div>${ps.length>60?`<p>+${ps.length-60} more working</p>`:''}`}
+ $('#wk').innerHTML=`<p>Send Stage 2+ pets to work from the Inventory. They earn coins per minute, even offline (max 8h). Well-fed pets earn more!</p><button class='b' onclick='collect()'>Collect ${Math.floor(tot)}🪙</button><div class='gr pk'>${ps.slice(0,60).map(p=>`<div class='cd'>${spr(p)}<small>${SP[p.s][0]} S${stg(p)}<br>${rate(p).toFixed(1)}/min · +${Math.floor(pend(p))}🪙</small><br><button class='b s' onclick='recall(${p.i})'>Recall</button></div>`).join('')||'<p>No pets at work.</p>'}</div>${ps.length>60?`<p>+${ps.length-60} more working</p>`:''}`}
 const price=p=>Math.round([10,40,120,400][stg(p)-1]*(1+p.p*.25)*(1+lvl(p.xp)*.03));let cf=0,IP=0;
 function sell(i){const p=S.pets.find(x=>x.i==i);if(cf!=i){cf=i;return toast(`Tap Sell again to sell for ${price(p)}🪙`)}S.c+=price(p);S.pets=S.pets.filter(x=>x!=p);if(S.sel==i)S.sel=null;delete M[i];cf=0;hud();inv()}
 function sellB(){const L=S.pets.filter(p=>stg(p)==1&&!p.h&&!p.w),t=L.reduce((a,p)=>a+price(p),0);if(!L.length)return toast('No Stage 1 pets to sell.');if(cf!='b'){cf='b';return toast(`Tap again to sell ${L.length} Stage 1 pets for ${t}🪙`)}S.c+=t;S.pets=S.pets.filter(p=>!L.includes(p));cf=0;hud();inv()}
@@ -317,7 +331,7 @@ function inv(){const L=[...S.pets].sort((a,b)=>stg(b)-stg(a)||b.xp-a.xp),pg=24,n
 const DG=[['Sunny Burrow','🌿','Easy',1,'#bfe9a8,#6cc56c',[0,4,2,5,6,10,13,15,19]],['Coral Grotto','🌊','Normal',1.5,'#9fe3ff,#2f8fd0',[0,1,4,8,7,12,18]],['Frost Crypt','❄️','Hard',2,'#9ab8e0,#4a6a9a',[2,4,1,6,5,14,17]],['Inferno Keep','🔥','Very Hard',2.6,'#ff9a6b,#7a2a2a',[3,2,9,5,7,11,14,16,18]],['Starlight Abyss','🌌','Nightmare',3.4,'#6a4bd1,#1b1245',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]]];
 function dun(){v(`<h3>🏰 Dungeons</h3><p>Harder worlds pay more coins. Each world drops its own egg palette. Clear floor 5 to unlock the next world.</p><div class='gr' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr))'>${DG.map((d,k)=>{const ok=!k||S.df[k-1]>5;return`<div class='cd' style='background:linear-gradient(${d[4]});color:#fff;${ok?'':'opacity:.5'}' onclick="${ok?`dsel(${k})`:`toast('Clear floor 5 of ${DG[k-1][0]} first!')`}"><h1>${ok?d[1]:'🔒'}</h1><b>${d[0]}</b><br><small>${d[2]} · Floor ${S.df[k]}<br>Drops ${PN[k]} eggs</small></div>`}).join('')}</div>`)}
 function dsel(k){const ps=S.pets.filter(p=>p.h&&!p.w);if(!ps.length)return v('<h3>Dungeons</h3><p>Bring a pet home from the Inventory first.</p>');
- v(`<h3>${DG[k][1]} ${DG[k][0]} — Floor ${S.df[k]}</h3><p>${DG[k][2]} · Choose a fighter (Stage ${[1,2,3,3,4][k]}+ recommended):</p><div class='gr'>${ps.map(p=>`<div class='cd' onclick='fight(${p.i},${k})'>${spr(p)}<small>${SP[p.s][0]} S${stg(p)}</small></div>`).join('')}</div><button class='b' onclick='dun()'>Back</button>`)}
+ v(`<h3>${DG[k][1]} ${DG[k][0]} — Floor ${S.df[k]}</h3><p>${DG[k][2]} · Choose a fighter (Stage ${[1,2,3,3,4][k]}+ recommended):</p><div class='gr pk'>${ps.map(p=>`<div class='cd' onclick='fight(${p.i},${k})'>${spr(p)}<small>${SP[p.s][0]} S${stg(p)}</small></div>`).join('')}</div><button class='b' onclick='dun()'>Back</button>`)}
 function fight(i,k){const p=S.pets.find(x=>x.i==i),st=stg(p),f=S.df[k],m=DG[k][3],pl=DG[k][5],e={s:pl[R(pl.length)],p:R(5)};
  e.st=Math.min(4,1+((k+(f/5|0))/1.5|0));e.mh=e.hp=Math.round((25+f*9)*m);e.a=(3+f*1.5)*m;
  D={p,k,f,hp:70+st*30,mh:70+st*30,a:12+st*7,e,h:3,t:0,log:`A wild ${SP[e.s][0]} appears! You strike first.`,over:0};ff()}
@@ -355,7 +369,7 @@ function panel(){const ps=S.pets.filter(p=>p.h&&!p.w),p=ps.find(x=>x.i==S.sel)||
 function dun(){v(`<h3>🏰 Dungeons</h3><p>Each world trains a level range. Clear floor 10 to unlock the next world. Each world drops its own egg palette.</p><div class='gr' style='grid-template-columns:repeat(auto-fill,minmax(150px,1fr))'>${DG.map((d,k)=>{const ok=!k||S.df[k-1]>10,L=LV[k];return`<div class='cd' style='background:linear-gradient(${d[4]});color:#fff;${ok?'':'opacity:.5'}' onclick="${ok?`dsel(${k})`:`toast('Clear floor 10 of ${DG[k-1][0]} first!')`}"><h1>${ok?d[1]:'🔒'}</h1><b>${d[0]}</b><br><small>${k<4?`Lv ${L[0]}–${L[1]}`:'Lv 40+ · endless'} · Floor ${S.df[k]}<br>Drops ${PN[k]} eggs</small></div>`}).join('')}</div>`)}
 function dsel(k){const ps=S.pets.filter(p=>p.h&&!p.w);if(!ps.length)return v('<h3>Dungeons</h3><p>Bring a pet home from the Inventory first.</p>');
  const f=S.df[k],el=k<4?Math.min(LV[k][1],LV[k][0]+f-1):40+f-1;
- v(`<h3>${DG[k][1]} ${DG[k][0]} — Floor ${f}</h3><p>Enemy Lv ${el}. Choose a fighter:</p><div class='gr'>${ps.map(p=>`<div class='cd' onclick='fight(${p.i},${k})'>${spr(p)}<small>${SP[p.s][0]}<br>Lv ${lvl(p.xp)} · ❤️${hpOf(p)} ⚔️${atkOf(p)}<br>${odds(p,el)}</small></div>`).join('')}</div><button class='b' onclick='dun()'>Back</button>`)}
+ v(`<h3>${DG[k][1]} ${DG[k][0]} — Floor ${f}</h3><p>Enemy Lv ${el}. Choose a fighter:</p><div class='gr pk'>${ps.map(p=>`<div class='cd' onclick='fight(${p.i},${k})'>${spr(p)}<small>${SP[p.s][0]}<br>Lv ${lvl(p.xp)} · ❤️${hpOf(p)} ⚔️${atkOf(p)}<br>${odds(p,el)}</small></div>`).join('')}</div><button class='b' onclick='dun()'>Back</button>`)}
 function fight(i,k){const p=S.pets.find(x=>x.i==i),f=S.df[k],pl=DG[k][5],el=k<4?Math.min(LV[k][1],LV[k][0]+f-1):40+f-1,e={s:pl[R(pl.length)],p:R(5)};
  e.st=Math.min(4,1+((el-1)/10|0));e.mh=e.hp=Math.round(60+el*14+e.st*20);e.a=8+el*2.2+e.st*4;e.df=4+el*1.2+e.st*3;
  D={p,k,f,el,pl:lvl(p.xp),hp:hpOf(p),mh:hpOf(p),a:atkOf(p),df:defOf(p),e,h:3,t:0,log:`A wild ${SP[e.s][0]} (Lv ${el}) appears! You strike first.`,over:0};ff()}
@@ -484,7 +498,7 @@ const invHead=()=>`<div style='margin-bottom:8px'><button class='b s st' style='
 function inv(){if(IT=='items')return itemsView();const p=S.pets.find(x=>x.i==PV);if(p)return prof(p);PV=0;petList()}
 function itemsView(){v(`${invHead()}<p>Items bought in the Work Shop. Use them from a pet's profile. Each stack holds up to 999.</p><div class='gr' style='grid-template-columns:repeat(auto-fill,minmax(160px,1fr))'>${ITEMS.map(i=>`<div class='cd' style='cursor:default;opacity:${S.it[i[0]]?1:.5}'><h1>${i[1]}</h1><b>${i[2]}</b><br><small>${i[4]}</small><br><b>× ${S.it[i[0]]}</b> / 999</div>`).join('')}</div>`)}
 function petList(){const L=sortPets(),pg=24,n=Math.max(1,Math.ceil(L.length/pg));IP=Math.min(IP,n-1);
- v(`${invHead()}<p>🏡 At home ${S.pets.filter(p=>p.h).length}/6 · Tap a pet to open its profile</p><button class='b s' onclick='sellB()'>💰 Sell all Stage 1 (not at home)</button>${sortBar()}<div class='gr' style='margin-top:8px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))'>${L.slice(IP*pg,IP*pg+pg).map(p=>`<div class='cd' onclick='PV=${p.i};inv()'><div class='ps'>${spr(p)}</div><div class='pi'><div>${TY[p.s]}</div><div>${PN[p.p]}</div><div><b>${SP[p.s][0]}</b></div><div>Lv ${lvl(p.xp)} · Stage ${stg(p)}</div><div>${p.w?'💼 Working':p.h?'🏡 At home':'📦 Storage'}</div><div class='pst'><span>❤️${hpOf(p)}</span><span>⚔️${atkOf(p)}</span><span>🛡️${defOf(p)}</span></div></div></div>`).join('')||'<p>Empty. Hatch an egg!</p>'}</div><div style='text-align:center;margin-top:8px'><button class='b s' ${IP?'':'disabled'} onclick='IP--;inv()'>◀</button> ${IP+1}/${n} <button class='b s' ${IP<n-1?'':'disabled'} onclick='IP++;inv()'>▶</button></div>`)}
+ v(`${invHead()}<p>🏡 At home ${S.pets.filter(p=>p.h).length}/6 · Tap a pet to open its profile</p><button class='b s' onclick='sellB()'>💰 Sell all Stage 1 (not at home)</button>${sortBar()}<div class='gr pg3' style='margin-top:8px'>${L.slice(IP*pg,IP*pg+pg).map(p=>`<div class='cd' onclick='PV=${p.i};inv()'><div class='ps'>${spr(p)}</div><div class='pi'><div>${TY[p.s]}</div><div>${PN[p.p]}</div><div><b>${SP[p.s][0]}</b></div><div>Lv ${lvl(p.xp)} · Stage ${stg(p)}</div><div>${p.w?'💼 Working':p.h?'🏡 At home':'📦 Storage'}</div><div class='pst'><span>❤️${hpOf(p)}</span><span>⚔️${atkOf(p)}</span><span>🛡️${defOf(p)}</span></div></div></div>`).join('')||'<p>Empty. Hatch an egg!</p>'}</div><div style='text-align:center;margin-top:8px'><button class='b s' ${IP?'':'disabled'} onclick='IP--;inv()'>◀</button> ${IP+1}/${n} <button class='b s' ${IP<n-1?'':'disabled'} onclick='IP++;inv()'>▶</button></div>`)}
 function prof(p){const st=stg(p),[L,x]=lvx(p),n=need(L),u=p.u||{a:0,d:0,h:0},can=L>=40;
  const sb=(lab,tot,bn)=>`<div>${lab}: <b>${tot}</b>${bn?` <small>(+${bn} from upgrades)</small>`:''}</div>`;
  const ub=(k,lab)=>`<button class='b s' ${can&&S.it[k]?'':'disabled'} onclick="useIt(${p.i},'${k}')">${lab} (×${S.it[k]})</button>`;
@@ -691,7 +705,7 @@ function svWP(id,lv){const l=lv-1;switch(id){
  case'orbit':return{dmg:13+5*l,n:[2,3,3,4,5][l],radius:78+6*l,spd:2.6+.25*l}}}
 const SVL={dmg:'Damage',cd:'Cooldown',n:'Count',pierce:'Pierce',radius:'Size',dist:'Range',dur:'Duration',spd:'Spin'};
 function svDiff(id,lv){const a=svWP(id,lv-1),b=svWP(id,lv);return Object.keys(b).filter(k=>SVL[k]&&Math.round(a[k]*10)!=Math.round(b[k]*10)).map(k=>`${SVL[k]} ${+a[k].toFixed(1)}→${+b[k].toFixed(1)}`).join(' · ')}
-const SVT={hp:12,hs:[1,1.7,2.8,4.5],ds:[1,1.5,2.2,3.2],dm:4,boss:40,cap:300};
+const SVT={hp:12,hs:[1,1.7,2.8,4.5],ds:[1,1.5,2.2,3.2],dm:4,boss:40,cap:300,bh:.10};
 const hpMul=s=>{const m=s/60;return(1+m*.45+m*m*.07)*Math.pow(1.16,Math.max(0,m-11))},dmMul=s=>{const m=s/60;return(1+m*.12+m*m*.006)*Math.pow(1.11,Math.max(0,m-11))},spMul=s=>Math.min(2,1+s/60*.03);
 const ARC=[{h:1,s:1,d:1,z:1,x:1},{h:.55,s:1.7,d:.7,z:.85,x:1.2},{h:3,s:.6,d:1.4,z:1.2,x:3},{h:.35,s:1.2,d:.5,z:.65,x:.5}];
 const SVA=[3,1,0,2,3,0,2,1,0,2,1,1,0,0,0,2,1,1,0,3],SVU=[1,3,5,8,1,3,6,4,2,10,2,5,7,7,8,3,4,6,4,1];
@@ -709,7 +723,7 @@ function svTab(){
  <div class="cd" style="cursor:default;margin-bottom:8px">${spr(p)}<br><b>${SP[p.s][2]} ${SP[p.s][0]}</b> · Lv ${m.L} · Stage ${m.st}<br><small>❤️ ${m.hp} HP · ⚔️ ×${m.dm.toFixed(2)} damage · 🛡️ ${Math.round((1-1/(1+m.dr))*100)}% less damage taken</small></div>
  <div style="text-align:center"><button class="b" style="font-size:22px;padding:14px 30px" onclick="svStart()">▶ Start Survival</button><p><small>🏆 Best: ${fmtT(S.sv.best)} · Runs: ${S.sv.runs}</small></p></div>
  <b>Choose your pet</b> <small>(page ${SVPg+1}/${np}, highest level first)</small>
- <div class="gr" style="margin:6px 0">${L.slice(SVPg*pg,SVPg*pg+pg).map(x=>`<div class="cd" style="${x.i==SVP?'outline:4px solid #ff7aa8':''}" onclick="SVP=${x.i};svTab()">${spr(x)}<small>${SP[x.s][0]}<br>Lv ${lvl(x.xp)}</small></div>`).join('')}</div>
+ <div class="gr pk" style="margin:6px 0">${L.slice(SVPg*pg,SVPg*pg+pg).map(x=>`<div class="cd" style="${x.i==SVP?'outline:4px solid #ff7aa8':''}" onclick="SVP=${x.i};svTab()">${spr(x)}<small>${SP[x.s][0]}<br>Lv ${lvl(x.xp)}</small></div>`).join('')}</div>
  <div style="text-align:center"><button class="b s" ${SVPg?'':'disabled'} onclick="SVPg--;svTab()">◀</button><button class="b s" ${SVPg<np-1?'':'disabled'} onclick="SVPg++;svTab()">▶</button></div>
  <details style="margin-top:10px"><summary><b>📖 Weapons &amp; items</b></summary><p><b>Weapons</b> (6 slots)</p>${SVWK.map(k=>`<div>${SVW[k][1]} <b>${SVW[k][0]}</b> <small>[${SVW[k][2]}] ${SVW[k][3]}</small></div>`).join('')}<p><b>Items</b> (6 slots)</p>${SVIK.map(k=>`<div>${SVI[k][1]} <b>${SVI[k][0]}</b> <small>${SVI[k][2]}</small></div>`).join('')}
  <p><b>🔥 Weapon fusions</b><br><small>When both weapons are Lv 5 and in your slots, a Fuse card can appear on level-up. The fused weapon takes only 1 slot and is stronger (+60% damage, 20% faster, 20% bigger, extra shots). You can hold up to 4 fused + 2 plain, so all 10 weapons fit.</small></p>${Object.values(SVFW).map(F=>`<div>${SVW[F.p[0]][1]} + ${SVW[F.p[1]][1]} → ${F.e} <b>${F.n}</b><br><small>${SVW[F.p[0]][0]} + ${SVW[F.p[1]][0]}. ${F.d}</small></div>`).join('')}
@@ -732,7 +746,7 @@ function svQual(q){G.q=q;G.cap=[180,240,300][q];G.dprMax=[1,1.25,(matchMedia('(p
 function svPerf(el){if(G.t<2)return;G.pw=(G.pw||0)+el;G.pn=(G.pn||0)+1;if(G.pw<1500)return;const avg=G.pw/G.pn;G.pw=G.pn=0;G.fps=Math.round(1000/avg);if((S.set.gfx||'auto')=='auto'&&G.q>0&&avg>25&&performance.now()-(G.qT||0)>3000){G.qT=performance.now();svQual(G.q-1)}}
 /* ---- game state ---- */
 function svNew(p){const pet=svPet(p);
- G={pet,p,t:0,pl:{x:0,y:0,hp:pet.hp,face:1,walk:0,inv:0},en:[],pj:[],fx:[],gm:[],ht:[],ck:[],wp:{},it:{},kills:0,lv:1,xp:0,nd:svNeed(1),pend:1,first:1,sa:0,wave:0,eid:0,bossN:0,rg:{},mv:{x:0,y:0},keys:{},over:0,paused:0,modal:0,usedRev:0,hurtT:0,sfxT:0,hs:{p:0,a:0,z:0},orbs:[],aur:0,fw:[],fi:[],fws:{},pk:{might:0,fury:0,fort:0,regn:0,fleet:0},ep:[],bn:'',bnT:0,pool:[],W:800,H:600,zoom:1,vr:500,joy:null,dead:0,bot:0};
+ G={pet,p,t:0,pl:{x:0,y:0,hp:pet.hp,face:1,walk:0,inv:0},en:[],pj:[],fx:[],gm:[],ht:[],ck:[],bh:[],bhT:0,wp:{},it:{},kills:0,lv:1,xp:0,nd:svNeed(1),pend:1,first:1,sa:0,wave:0,eid:0,bossN:0,rg:{},mv:{x:0,y:0},keys:{},over:0,paused:0,modal:0,usedRev:0,hurtT:0,sfxT:0,hs:{p:0,a:0,z:0},orbs:[],aur:0,fw:[],fi:[],fws:{},pk:{might:0,fury:0,fort:0,regn:0,fleet:0},ep:[],bn:'',bnT:0,pool:[],W:800,H:600,zoom:1,vr:500,joy:null,dead:0,bot:0};
  svStats();G.pl.hp=G.mhp;svPool()}
 const SVFW={nova2:{n:'Nova Barrage',e:'🌠',p:['bolt','star'],d:'Bolts and bursts of stars together.'},razor:{n:'Razor Storm',e:'🌀',p:['arrow','boom'],d:'Arrow fans and boomerangs in one storm.'},stormaura:{n:'Storm Aura',e:'⛈️',p:['chain','aura'],d:'A burning aura that also chains lightning.'},blizzard:{n:'Toxic Blizzard',e:'🌨️',p:['nova','cloud'],d:'Freezing rings and toxic clouds together.'},comet:{n:'Solar Comet',e:'☀️',p:['meteor','orbit'],d:'Orbiting orbs plus meteor showers.'}};
 const SVFI={blossom:{n:'Life Blossom',e:'🌸',p:['heart','herb'],d:'Huge max HP and regeneration (both at effective Lv 8).'},windw:{n:'Wind Walker',e:'🌬️',p:['boots','magnet'],d:'Much faster movement and pickup range.'},prism:{n:'Prism Crown',e:'👑',p:['gem','scroll'],d:'Big damage and area boost.'},guard:{n:'Guardian Wings',e:'🕊️',p:['plate','feather'],d:'Strong damage reduction and 3 revives.'},timec:{n:'Time Clover',e:'🕰️',p:['clover','clock'],d:'More XP and much faster weapons.'}};
@@ -742,7 +756,7 @@ function svStats(){const it=G.it,pk=G.pk,old=G.mhp||0;
  const L=id=>{let l=it[id]||0;for(const c of G.fi)if(SVFI[c].p.includes(id))l=Math.max(l,8);return l};
  G.mhp=Math.round(G.pet.hp+L('heart')*25);if(old&&G.mhp>old)G.pl.hp+=G.mhp-old;
  G.dm=G.pet.dm*(1+.12*L('gem'))*(1+.08*pk.might)*Math.pow(1.05,pk.fury);G.cdm=Math.max(.45,1-.07*L('clock'));G.am=1+.12*L('scroll');G.spd=150*(1+Math.min(.8,.08*L('boots')))*(1+.04*pk.fleet/(1+.03*pk.fleet));
- G.mag=70*(1+.3*L('magnet'));G.xpm=1+.12*L('clover');G.reg=G.mhp*(Math.min(.05,.004*L('herb'))+.004*pk.regn/(1+.05*pk.regn));G.dr=Math.max(.15,1/(1+G.pet.dr+.1*L('plate'))/(1+.06*pk.fort));G.revs=G.fi.includes('guard')?3:(it.feather||0)}
+ G.mag=70*(1+.3*L('magnet'));G.mlv=G.it.magnet||0;G.xpm=1+.12*L('clover');G.reg=G.mhp*(Math.min(.05,.004*L('herb'))+.004*pk.regn/(1+.05*pk.regn));G.dr=Math.max(.15,1/(1+G.pet.dr+.1*L('plate'))/(1+.06*pk.fort));G.revs=G.fi.includes('guard')?3:(it.feather||0)}
 function svPool(){G.pool=[];for(let s=0;s<20;s++)if(SVU[s]<=Math.max(1,G.wave))G.pool.push(s)}
 const svSt=sec=>sec<240?1:sec<540?2:sec<900?3:4;
 function svMk(s,st,A,boss,x,y){const sec=G.t,AR=ARC[A],h=SVT.hp*AR.h*SVT.hs[st-1]*hpMul(sec)*(boss?SVT.boss:1),disp=(34+st*8)*AR.z*(boss?2.6:1);
@@ -788,30 +802,42 @@ function svLevelUp(){if(G.pend<=0){G.modal=0;const m0=$('#svm');if(m0)m0.style.d
 function svPick(i){if(!G||!G.modal||!G.ch[i])return;svApply(G.ch[i]);G.pend--;G.modal=0;G.last=performance.now();svLevelUp()}
 /* ---- helpers ---- */
 function svNear(x,y,r,skip){let b=null,bd=r*r;for(const e of G.en){if(e.dead||(skip&&skip.includes(e)))continue;const d=(e.x-x)**2+(e.y-y)**2;if(d<bd){bd=d;b=e}}return b}
-function svSnd(ty,k){if(!AC||G.hs[ty]>0)return;G.hs[ty]=ty=='a'?.11:ty=='z'?.08:.06;const t=AC.currentTime+.005,d=gS,u=k?1.25:1,j=1+Math.random()*.2;
- if(ty=='p'){const f=780*u*j;tn(t,f,.05,'triangle',.11,d,f*1.5);nz(t,.02,.05,'bandpass',3500,d)}
- else if(ty=='z'){tn(t,1700*u*j,.1,'sawtooth',.07,d,260);nz(t,.07,.08,'bandpass',4200,d)}
- else{const f=150*u*j;tn(t,f,.14,'sine',.22,d,f*.45);nz(t,.08,.1,'lowpass',520,d)}}
-function svDmg(e,d,a,kb,ty){if(e.dead)return;e.hp-=d;e.fl=.1;svSnd(ty||'a',e.hp<=0);if(kb&&!e.boss){e.kx+=Math.cos(a)*kb;e.ky+=Math.sin(a)*kb}
+function svSnd(ty,k,pw){if(!AC||!G)return;const gap={aura:.09,cloud:.1,nova:.12,meteor:.12,chain:.07,orbit:.08}[ty]||.055;if(G.hs[ty]>0)return;G.hs[ty]=gap;
+ const now=performance.now();G.cmb=(now-(G.cl||0)<550)?Math.min(24,(G.cmb||0)+1):0;G.cl=now;
+ const t=AC.currentTime+.005,d=gS,c=1+G.cmb*.018,j=(.9+Math.random()*.22)*c,V=(.7+.6*Math.min(1,(pw||0)*4))*(k?1.15:1),T=(f,du,tp,vl,f2,o)=>tn(t+(o||0),f,du,tp,vl*V,d,f2),N=(du,vl,ft,fq,o)=>nz(t+(o||0),du,vl*V,ft,fq,d);
+ switch(ty){
+  case'bolt':T(900*j,.07,'triangle',.11,1700*j);T(1800*j,.09,'sine',.04,2400*j,.01);N(.02,.04,'bandpass',4200);break;
+  case'arrow':N(.045,.07,'bandpass',2600*j);T(230*j,.06,'square',.07,110*j);break;
+  case'chain':T(1700*j,.1,'sawtooth',.07,260);N(.07,.08,'bandpass',4200*(.9+Math.random()*.3));T(90,.08,'square',.05,60,.02);break;
+  case'boom':T(330*j,.08,'triangle',.15,150*j);N(.035,.07,'bandpass',1700);break;
+  case'star':{const sc=[1,1.122,1.26,1.498,1.682][R(5)];T(1250*sc*c,.11,'sine',.09,0);T(1250*sc*c*1.5,.14,'sine',.045,0,.02);break}
+  case'nova':N(.14,.1,'highpass',5200);T(1500*j,.2,'sine',.08,480);T(2300*j,.08,'triangle',.04,1800,.03);break;
+  case'meteor':T(95*j,.32,'sine',.32,38);N(.22,.2,'lowpass',320);T(190*j,.12,'sawtooth',.06,70);break;
+  case'aura':T(520*j,.09,'sine',.07,760*j);T(780*j,.07,'triangle',.03,520,.02);break;
+  case'cloud':T(300*j,.1,'sine',.08,560*j);N(.06,.05,'bandpass',900);T(420*j,.07,'sine',.04,250,.05);break;
+  case'orbit':T(980*j,.14,'sine',.1,880*j);T(1470*j,.12,'sine',.05,1320*j,.01);break;
+  default:{const f=150*j;T(f,.14,'sine',.22,f*.45);N(.08,.1,'lowpass',520)}}
+ if(k){T(520*j,.07,'triangle',.07,1100*j,.03)}}
+function svDmg(e,d,a,kb,ty){if(e.dead)return;e.hp-=d;e.fl=.1;svSnd(ty||'a',e.hp<=0,d/(e.mhp||1));if(kb&&!e.boss){e.kx+=Math.cos(a)*kb;e.ky+=Math.sin(a)*kb}
  if(e.hp<=0){e.dead=1;G.kills++;if(e.boss){G.ck.push({x:e.x,y:e.y});G.pl.hp=Math.min(G.mhp,G.pl.hp+G.mhp*.25)}
-  if(G.gm.length>350){G.gm[R(G.gm.length)].v+=e.xp}else G.gm.push({x:e.x,y:e.y,v:e.xp,m:0});
-  if(!e.boss&&Math.random()<.012)G.ht.push({x:e.x+8,y:e.y})}}
-function svCirc(x,y,r,d,kb,slow){for(const e of G.en){if(e.dead)continue;const dx=e.x-x,dy=e.y-y,rr=r+e.r;if(dx*dx+dy*dy<rr*rr){svDmg(e,d,Math.atan2(dy,dx),kb||0,'a');if(slow){e.slow=Math.max(e.slow,slow[1]);e.sf=slow[0]}}}}
+  {let nb=null;if(G.gm.length>600){let bd=1e18;for(const g of G.gm){const q=(g.x-e.x)**2+(g.y-e.y)**2;if(q<bd){bd=q;nb=g}}}if(nb)nb.v+=e.xp;else G.gm.push({x:e.x,y:e.y,v:e.xp,m:G.bhOn?2:0})}
+  if(!e.boss&&Math.random()<.012)G.ht.push({x:e.x+8,y:e.y});if(!e.boss&&!e.death&&G.bhT<=0&&!G.bh.length&&Math.random()<SVT.bh){G.bh.push({x:e.x-8,y:e.y,r:0});G.bhT=15}}}
+function svCirc(x,y,r,d,kb,slow,ty){for(const e of G.en){if(e.dead)continue;const dx=e.x-x,dy=e.y-y,rr=r+e.r;if(dx*dx+dy*dy<rr*rr){svDmg(e,d,Math.atan2(dy,dx),kb||0,ty||'a');if(slow){e.slow=Math.max(e.slow,slow[1]);e.sf=slow[0]}}}}
 function svFire(id,P,dmg,w){const pl=G.pl,am=G.am,pj=G.pj;let t;
  switch(id){
  case'bolt':{if(!(t=svNear(pl.x,pl.y,520)))return 0;const b=Math.atan2(t.y-pl.y,t.x-pl.x);for(let i=0;i<P.n;i++){const a=b+(i-(P.n-1)/2)*.18;pj.push({x:pl.x,y:pl.y,vx:Math.cos(a)*460,vy:Math.sin(a)*460,dmg,r:7*am,pierce:P.pierce,life:1.4,ty:'bolt',hb:[]})}return 1}
  case'arrow':{if(!(t=svNear(pl.x,pl.y,560)))return 0;const b=Math.atan2(t.y-pl.y,t.x-pl.x);for(let i=0;i<P.n;i++){const a=b+(i-(P.n-1)/2)*.13;pj.push({x:pl.x,y:pl.y,vx:Math.cos(a)*540,vy:Math.sin(a)*540,dmg,r:5*am,pierce:P.pierce,life:1.1,ty:'arrow',a,hb:[]})}return 1}
- case'chain':{if(!(t=svNear(pl.x,pl.y,380)))return 0;const hit=[];let cx=pl.x,cy=pl.y;for(let i=0;i<=P.n&&t;i++){svDmg(t,dmg,Math.atan2(t.y-cy,t.x-cx),0,'z');G.fx.push({ty:'zap',x1:cx,y1:cy,x2:t.x,y2:t.y,t:0,dur:.2});hit.push(t);cx=t.x;cy=t.y;t=svNear(cx,cy,170*am,hit)}return 1}
+ case'chain':{if(!(t=svNear(pl.x,pl.y,380)))return 0;const hit=[];let cx=pl.x,cy=pl.y;for(let i=0;i<=P.n&&t;i++){svDmg(t,dmg,Math.atan2(t.y-cy,t.x-cx),0,'chain');G.fx.push({ty:'zap',x1:cx,y1:cy,x2:t.x,y2:t.y,t:0,dur:.2});hit.push(t);cx=t.x;cy=t.y;t=svNear(cx,cy,170*am,hit)}return 1}
  case'boom':{if(!(t=svNear(pl.x,pl.y,520)))return 0;const b=Math.atan2(t.y-pl.y,t.x-pl.x);for(let i=0;i<P.n;i++){const a=b+(i-(P.n-1)/2)*.7;pj.push({x:pl.x,y:pl.y,vx:Math.cos(a)*340,vy:Math.sin(a)*340,dmg,r:13*am,pierce:999,life:6,ty:'boom',trav:0,dist:P.dist*am,ret:0,rot:0,hb:[]})}return 1}
  case'star':{if(!svNear(pl.x,pl.y,560))return 0;const o=Math.random()*6.283;for(let i=0;i<P.n;i++){const a=o+i/P.n*6.283;pj.push({x:pl.x,y:pl.y,vx:Math.cos(a)*380,vy:Math.sin(a)*380,dmg,r:7*am,pierce:P.pierce,life:1.3,ty:'star',rot:0,hb:[]})}return 1}
- case'nova':{if(!svNear(pl.x,pl.y,P.radius*am*1.4))return 0;svCirc(pl.x,pl.y,P.radius*am,dmg,120,[.5,2]);G.fx.push({ty:'nova',x:pl.x,y:pl.y,max:P.radius*am,t:0,dur:.45});return 1}
+ case'nova':{if(!svNear(pl.x,pl.y,P.radius*am*1.4))return 0;svCirc(pl.x,pl.y,P.radius*am,dmg,120,[.5,2],'nova');G.fx.push({ty:'nova',x:pl.x,y:pl.y,max:P.radius*am,t:0,dur:.45});return 1}
  case'meteor':{const c=G.en.filter(e=>!e.dead&&(e.x-pl.x)**2+(e.y-pl.y)**2<480*480);if(!c.length)return 0;for(let i=0;i<P.n;i++){const e=c[R(c.length)];G.fx.push({ty:'met',x:e.x,y:e.y,r:P.radius*am,dmg,t:0,dur:.65})}return 1}
  case'cloud':{t=svNear(pl.x,pl.y,340);G.fx.push({ty:'cloud',x:t?t.x:pl.x,y:t?t.y:pl.y,r:P.radius*am,dmg,t:0,dur:P.dur,tk:0});return 1}}
  return 0}
 function svRun(id,P,w,dt){const pl=G.pl,dmg=P.dmg*G.dm;
- if(id=='aura'){w.tk=(w.tk||0)-dt;if(w.tk<=0){w.tk=.5;svCirc(pl.x,pl.y,P.radius*G.am,dmg,40)}G.aur=Math.max(G.aur,P.radius*G.am)}
+ if(id=='aura'){w.tk=(w.tk||0)-dt;if(w.tk<=0){w.tk=.5;svCirc(pl.x,pl.y,P.radius*G.am,dmg,40,0,'aura')}G.aur=Math.max(G.aur,P.radius*G.am)}
  else if(id=='orbit'){w.ang=(w.ang||0)+dt*P.spd;const rr=P.radius*G.am,or=12*G.am;for(let i=0;i<P.n;i++){const a=w.ang+i/P.n*6.283,ox=pl.x+Math.cos(a)*rr,oy=pl.y+Math.sin(a)*rr;G.orbs.push([ox,oy]);
-   for(const e of G.en){if(e.dead||e.ob>0)continue;const dx=e.x-ox,dy=e.y-oy,q=or+e.r;if(dx*dx+dy*dy<q*q){svDmg(e,dmg,Math.atan2(dy,dx),90,'a');e.ob=.45}}}}
+   for(const e of G.en){if(e.dead||e.ob>0)continue;const dx=e.x-ox,dy=e.y-oy,q=or+e.r;if(dx*dx+dy*dy<q*q){svDmg(e,dmg,Math.atan2(dy,dx),90,'orbit');e.ob=.45}}}}
  else{w.cd-=dt;if(w.cd<=0)w.cd=svFire(id,P,dmg,w)?P.cd*G.cdm:.15}}
 function svWeapons(dt){G.orbs=[];G.aur=0;
  for(const id in G.wp){const w=G.wp[id];svRun(id,svWP(id,w.lv),w,dt)}
@@ -847,22 +873,25 @@ function svStep(dt){const pl=G.pl;G.t+=dt;const sec=G.t;
   else{p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.rot!==undefined)p.rot+=dt*10}
   const pc=Math.floor(p.x/CS)+1e5,pr=Math.floor(p.y/CS)+1e5,rg=Math.ceil((p.r+80)/CS);let stop=0;
   for(let ox=-rg;ox<=rg&&!stop;ox++)for(let oy=-rg;oy<=rg&&!stop;oy++){const a=gr.get((pc+ox)*200003+pr+oy);if(!a)continue;
-   for(const e of a){if(e.dead||p.hb.includes(e))continue;const dx=e.x-p.x,dy=e.y-p.y,q=p.r+e.r;if(dx*dx+dy*dy<q*q){svDmg(e,p.dmg,Math.atan2(p.vy,p.vx),60,'p');p.hb.push(e);if(p.ty!='boom'&&--p.pierce<0){p.life=0;stop=1;break}}}}}
+   for(const e of a){if(e.dead||p.hb.includes(e))continue;const dx=e.x-p.x,dy=e.y-p.y,q=p.r+e.r;if(dx*dx+dy*dy<q*q){svDmg(e,p.dmg,Math.atan2(p.vy,p.vx),60,p.ty);p.hb.push(e);if(p.ty!='boom'&&--p.pierce<0){p.life=0;stop=1;break}}}}}
  G.pj=G.pj.filter(p=>p.life>0);
  for(const p of G.ep){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=dt*8;if(!(pl.inv>0)&&(p.x-pl.x)**2+(p.y-pl.y)**2<(PR+p.r)**2){p.life=0;pl.hp-=p.dmg*G.dr;G.hurtT=.18;if(G.sfxT<=0){G.sfxT=.2;sfx('hurt')}}}
  G.ep=G.ep.filter(p=>p.life>0);
  /* fx */
  for(const f of G.fx){f.t+=dt;
-  if(f.ty=='met'&&!f.done&&f.t>=f.dur){f.done=1;svCirc(f.x,f.y,f.r,f.dmg,160);f.t=0;f.dur=.3;f.ty='boom2'}
-  else if(f.ty=='cloud'){f.tk-=dt;if(f.tk<=0){f.tk=.4;svCirc(f.x,f.y,f.r,f.dmg,0,[.6,.6])}}}
+  if(f.ty=='met'&&!f.done&&f.t>=f.dur){f.done=1;svCirc(f.x,f.y,f.r,f.dmg,160,0,'meteor');f.t=0;f.dur=.3;f.ty='boom2'}
+  else if(f.ty=='cloud'){f.tk-=dt;if(f.tk<=0){f.tk=.4;svCirc(f.x,f.y,f.r,f.dmg,0,[.6,.6],'cloud')}}}
  G.fx=G.fx.filter(f=>f.t<f.dur);
  /* pickups */
- const mg=G.mag;
- for(const g of G.gm){const dx=pl.x-g.x,dy=pl.y-g.y,d=Math.hypot(dx,dy)||1;if(g.m||d<mg)g.m=1;if(g.m){const s=Math.min(d/dt,320+sec*.2)*dt*(.5+Math.min(1,200/d));g.x+=dx/d*s;g.y+=dy/d*s}
+ G.bhT-=dt;G.bhOn=G.bhOn>0?G.bhOn-dt:0;
+ const mLv=G.mlv||0,ww=G.fi.includes('windw'),mg=ww?1e12:mLv>=5?G.vr*1.1:70+(G.vr*1.1-70)*Math.pow(mLv/5,1.5);
+ if(G.gm.length>220&&((G.mt=(G.mt||0)-dt)<=0)){G.mt=1;const cs=160,cell=new Map(),far=G.vr*1.25;for(const g of G.gm){const dd=Math.hypot(g.x-pl.x,g.y-pl.y);if(dd>far&&!g.m){const k=Math.floor(g.x/cs)+','+Math.floor(g.y/cs),o=cell.get(k);if(o){o.v+=g.v;g.d=1}else cell.set(k,g)}}}
+ for(const g of G.gm){const dx=pl.x-g.x,dy=pl.y-g.y,d=Math.hypot(dx,dy)||1;if(!g.m&&d<mg)g.m=ww?2:1;if(g.m){const s=g.m==2?Math.min(d,(ww?650:1000)*dt):Math.min(d/dt,320+sec*.2)*dt*(.5+Math.min(1,200/d));g.x+=dx/d*s;g.y+=dy/d*s}
   if(d<PR+6){g.d=1;G.xp+=g.v*G.xpm}}
  G.gm=G.gm.filter(g=>!g.d);
  while(G.xp>=G.nd){G.xp-=G.nd;G.lv++;G.nd=svNeed(G.lv);G.pend++}
  for(const h of G.ht){if((h.x-pl.x)**2+(h.y-pl.y)**2<(PR+12)**2){h.d=1;pl.hp=Math.min(G.mhp,pl.hp+G.mhp*.15)}}G.ht=G.ht.filter(h=>!h.d);
+ for(const b of G.bh){b.r+=dt;if((b.x-pl.x)**2+(b.y-pl.y)**2<(PR+18)**2){b.d=1;for(const g of G.gm)g.m=2;G.bhOn=1.5;svBanner('🕳️ Black Hole! All EXP pulled in');G.fx.push({ty:'nova',x:pl.x,y:pl.y,max:G.vr*1.2,t:0,dur:.6});if(AC){const t=AC.currentTime;tn(t,520,.55,'sine',.22,gS,50);nz(t,.4,.12,'lowpass',700,gS)}}}G.bh=G.bh.filter(b=>!b.d);
  for(const c of G.ck){if((c.x-pl.x)**2+(c.y-pl.y)**2<(PR+22)**2){c.d=1;G.pend++;pl.hp=Math.min(G.mhp,pl.hp+G.mhp*.3);svBanner('🎁 Treasure!')}}G.ck=G.ck.filter(c=>!c.d);
  if(G.en.some(e=>e.dead))G.en=G.en.filter(e=>!e.dead);
  if(pl.hp<=0){if(G.usedRev<G.revs){G.usedRev++;pl.hp=G.mhp*.5;pl.inv=3;svCirc(pl.x,pl.y,260,1e9,300);G.fx.push({ty:'nova',x:pl.x,y:pl.y,max:260,t:0,dur:.5});svBanner('🪶 Revived!');G.ep=[]}else{svEnd(0);return}}
@@ -926,6 +955,7 @@ function svDraw(){const c=$('#svc');if(!c||!G)return;const x=c.getContext('2d'),
  if(!G.pat)G.pat=x.createPattern(svTile(),'repeat');x.fillStyle=G.pat;x.fillRect(pl.x-hw,pl.y-hh,hw*2,hh*2);if(k>0){x.fillStyle=`rgba(70,10,50,${k*.42})`;x.fillRect(pl.x-hw,pl.y-hh,hw*2,hh*2)}
  for(const g of G.gm){if(g.x<pl.x-hw||g.x>pl.x+hw||g.y<pl.y-hh||g.y>pl.y+hh)continue;const v=g.v,col=v<3?'#3df2c1':v<10?'#5aa8ff':v<30?'#c07bff':'#ffd34d',gs=(38+Math.min(30,v*3))*(.88+.12*Math.sin(t*5+g.x*.1));if(G.q>0)x.drawImage(svGlow(col),g.x-gs/2,g.y-gs/2,gs,gs);const r=4.5+Math.min(4,v*.5);x.fillStyle=col;x.strokeStyle='#fff';x.lineWidth=1.6;x.beginPath();x.arc(g.x,g.y,r,0,6.283);x.fill();x.stroke();x.fillStyle='#fff';x.beginPath();x.arc(g.x-r*.3,g.y-r*.3,r*.35,0,6.283);x.fill()}
  for(const h of G.ht){x.font='20px sans-serif';x.textAlign='center';x.fillText('💖',h.x,h.y+7)}
+ for(const b of G.bh){const rr=11+Math.sin(b.r*5)*1.5;if(G.q>0)x.drawImage(svGlow('#9a4dff'),b.x-34,b.y-34,68,68);x.save();x.translate(b.x,b.y);x.fillStyle='#0a0212';x.strokeStyle='#b57cff';x.lineWidth=2.5;x.beginPath();x.arc(0,0,rr,0,6.283);x.fill();x.stroke();x.rotate(b.r*4);x.strokeStyle='#e2c8ff';x.lineWidth=1.6;x.beginPath();x.arc(0,0,rr+5,0,4.2);x.stroke();x.rotate(2.3);x.beginPath();x.arc(0,0,rr+9,0,2.6);x.stroke();x.restore()}
  for(const q of G.ck){x.font='34px sans-serif';x.textAlign='center';x.fillText('🎁',q.x,q.y+12)}
  /* ground fx */
  for(const f of G.fx){const p=f.t/f.dur;
