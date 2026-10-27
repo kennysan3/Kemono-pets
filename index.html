@@ -257,7 +257,7 @@ function panel(){
 const sp=()=>S.pets.find(x=>x.i==S.sel);
 function feed(){const p=sp();if(S.c<5)return toast('Not enough coins!');S.c-=5;p.f=Math.min(100,p.f+30);gain(p,8);hearts($(`.pt[data-i="${p.i}"]`),1);hud();panel()}
 function petIt(){const p=sp(),d=$(`.pt[data-i="${p.i}"]`);hearts(d,5);gain(p,1);p.f=Math.min(100,p.f+2);panel()}
-function work(i){const p=S.pets.find(x=>x.i==i);p.w=Date.now();p.h=0;delete M[i];toast('Sent to work! Earns coins even while you are away (max 8h).');save();go('work')}
+function work(i){const p=S.pets.find(x=>x.i==i);if(wfull())return;p.w=Date.now();p.h=0;delete M[i];toast('Sent to work! Earns coins even while you are away (max 8h).');save();go('work')}
 setInterval(()=>{const a=$('#ar');if(!a)return;const W=a.clientWidth,H=a.clientHeight;
  a.querySelectorAll('.pt').forEach(d=>{const m=M[d.dataset.i];if(!m)return;if(!m.drag)m.y=Math.max(H*.5,Math.min(H-6,m.y));if(m.drag){d.style.left=m.x+'px';d.style.top=m.y+'px';d.style.zIndex=999;return}
   if(m.w>0)m.w--;else if(!m.tx||Math.hypot(m.tx-m.x,m.ty-m.y)<3){m.tx=40+R(W-80);m.ty=H*.5+R(H*.45);m.w=R(80);m.sp=.5+Math.random()}
@@ -324,13 +324,16 @@ function panel(){const ps=S.pets.filter(p=>p.h&&!p.w),p=ps.find(x=>x.i==S.sel)||
  if(!p){$('#pn').innerHTML=S.pets.length?'No pets at home. Open the <b>Inventory</b> to bring pets home (max 6).':'Open the <b>Eggs</b> tab and tap your egg to hatch it!';return}
  S.sel=p.i;const st=stg(p),nx=XP[st]||p.xp,pv=XP[st-1];document.querySelectorAll('.pt').forEach(d=>d.classList.toggle('sel',d.dataset.i==p.i));
  $('#pn').innerHTML=`<b>${SP[p.s][2]} ${SP[p.s][0]} (${PN[p.p]})</b> · Stage ${st}${st==4?' (Max)':''}<div class='bar'><i style='width:${st==4?100:(p.xp-pv)/(nx-pv)*100}%'></i></div><small>🍖 Fullness ${Math.round(p.f)}%</small><div><button class='b' onclick='feed()'>🍖 Feed (5🪙)</button><button class='b' onclick='petIt()'>💗 Pet</button>${st>=2?`<button class='b' onclick='work(${p.i})'>💼 Work</button>`:''}</div><small>Tap pets to select. Manage pets in the Inventory.</small>`}
-function works(){const ps=S.pets.filter(p=>p.w),tot=S.pets.reduce((a,p)=>a+pend(p),0);
- $('#wk').innerHTML=`<p>Send Stage 2+ pets to work from the Inventory. They earn coins per minute, even offline (max 8h). Well-fed pets earn more!</p><button class='b' onclick='collect()'>Collect ${Math.floor(tot)}🪙</button><div class='gr pk'>${ps.slice(0,60).map(p=>`<div class='cd'>${spr(p)}<small class='ln'><span><b>${SP[p.s][0]} S${stg(p)}</b></span><span>${rate(p).toFixed(1)}/min</span><span>+${Math.floor(pend(p))}🪙</span></small><br><button class='b s' onclick='recall(${p.i})'>Recall</button></div>`).join('')||'<p>No pets at work.</p>'}</div>${ps.length>60?`<p>+${ps.length-60} more working</p>`:''}`}
+function works(){const ps=S.pets.filter(p=>p.w),tot=S.pets.reduce((a,p)=>a+pend(p),0),sl=wslots(),nx=S.ws|0,emp=Math.max(0,sl-ps.length);
+ const wc=p=>`<div class='cd'>${spr(p)}<small class='ln'><span><b>${SP[p.s][0]} S${stg(p)}</b></span><span>${rate(p).toFixed(1)}/min</span><span>+${Math.floor(pend(p))}🪙</span></small><br><button class='b s' onclick='recall(${p.i})'>Recall</button></div>`;
+ const ec=`<div class='cd' style='cursor:default;opacity:.55'><div class='eb'>➕</div><small class='ln'><span><b>Empty slot</b></span><span>Send a pet</span><span>from Inventory</span></small><br><button class='b s' disabled>—</button></div>`;
+ const lc=[...Array(10-nx)].map((_,k)=>{const j=nx+k;return `<div class='cd' style='cursor:default;opacity:${k?.5:1}'><div class='eb'>🔒</div><small class='ln'><span><b>Slot ${WBASE+j+1}</b></span><span>${WCOST[j].toLocaleString()}🪙</span><span>${k?'Locked':'Next slot'}</span></small><br><button class='b s' ${k?'disabled':''} onclick='unlockSlot()'>${k?'🔒':'Unlock'}</button></div>`}).join('');
+ $('#wk').innerHTML=`<p>💼 Work slots <b>${ps.length}/${sl}</b> (max ${WCAP}) · Send Stage 2+ pets to work from the Inventory. They earn coins per minute, even offline (max 8h). Well-fed pets earn more!${ps.length>sl?'<br><small>Pets beyond your slots keep working, but no new pets can be sent until you have free slots.</small>':''}</p><button class='b' onclick='collect()'>Collect ${Math.floor(tot)}🪙</button><div class='gr pk'>${ps.map(wc).join('')}${ec.repeat(emp)}${lc}</div>`}
 const price=p=>Math.round([10,40,120,400][stg(p)-1]*(1+p.p*.25)*(1+lvl(p.xp)*.03));let cf=0,IP=0;
 function sell(i){const p=S.pets.find(x=>x.i==i);if(cf!=i){cf=i;return toast(`Tap Sell again to sell for ${price(p)}🪙`)}S.c+=price(p);S.pets=S.pets.filter(x=>x!=p);if(S.sel==i)S.sel=null;delete M[i];cf=0;hud();inv()}
 function sellB(){const L=S.pets.filter(p=>stg(p)==1&&!p.h&&!p.w),t=L.reduce((a,p)=>a+price(p),0);if(!L.length)return toast('No Stage 1 pets to sell.');if(cf!='b'){cf='b';return toast(`Tap again to sell ${L.length} Stage 1 pets for ${t}🪙`)}S.c+=t;S.pets=S.pets.filter(p=>!L.includes(p));cf=0;hud();inv()}
 function ih(i){const p=S.pets.find(x=>x.i==i);if(!p.h&&S.pets.filter(q=>q.h).length>=6)return toast('Home is full (6 max). Store one first.');p.h=p.h?0:1;delete M[i];save();inv()}
-function iw(i){const p=S.pets.find(x=>x.i==i);p.w=Date.now();p.h=0;delete M[i];save();inv()}
+function iw(i){const p=S.pets.find(x=>x.i==i);if(wfull())return;p.w=Date.now();p.h=0;delete M[i];save();inv()}
 function irc(i){const p=S.pets.find(x=>x.i==i);S.c+=pend(p);p.w=0;hud();inv()}
 function inv(){const L=[...S.pets].sort((a,b)=>stg(b)-stg(a)||b.xp-a.xp),pg=24,n=Math.max(1,Math.ceil(L.length/pg));IP=Math.min(IP,n-1);
  v(`<h3>📦 Inventory ${S.pets.length}/999</h3><p>🏡 At home ${S.pets.filter(p=>p.h).length}/6 · Selling price depends on stage and palette</p><button class='b s' onclick='sellB()'>💰 Sell all Stage 1 (not at home)</button>${sortBar()}<div class='gr'>${L.slice(IP*pg,IP*pg+pg).map(p=>{const st=stg(p);return`<div class='cd'>${spr(p)}<small><br>${SP[p.s][0]} · ${PN[p.p]}<br>${TY[p.s]}<br>Lv ${lvl(p.xp)} · Stage ${st}${p.w?' · 💼':''}</small><br>${p.w?`<button class='b s' onclick='irc(${p.i})'>Recall</button>`:`<button class='b s' onclick='ih(${p.i})'>${p.h?'📦 Store':'🏡 Home'}</button>${st>1?`<button class='b s' onclick='iw(${p.i})'>💼</button>`:''}<button class='b s' onclick='sell(${p.i})'>💰${price(p)}</button>`}</div>`}).join('')||'<p>Empty. Hatch an egg!</p>'}</div><div style='text-align:center;margin-top:8px'><button class='b s' ${IP?'':'disabled'} onclick='IP--;inv()'>◀</button> ${IP+1}/${n} <button class='b s' ${IP<n-1?'':'disabled'} onclick='IP++;inv()'>▶</button></div>`)}
@@ -486,8 +489,12 @@ function setgs(){const s=S.set;
  ${[[.85,'Small'],[1,'Normal'],[1.25,'Large'],[1.5,'XL']].map(([x,n])=>`<button class='b s' onclick='setSc(${x},1)'>${n}</button>`).join('')}<p><small>Auto picks the layout from your screen size. Choose PC for bigger pets and a wide view, or Mobile for a compact one.</small></p></div>`)}
 applyDisplay();
 /* v5 shop + items + pet profiles */
-S.it=Object.assign({evo:0,atk:0,def:0,hp:0},S.it||{});
-const ITEMS=[['evo','💎','Evolution Stone',1000,'Raises a pet to the first level of its next stage.'],['atk','⚔️','Attack Upgrade',2000,'+4 Attack. Pet must be Lv 40+.'],['def','🛡️','Defense Upgrade',2000,'+3 Defense. Pet must be Lv 40+.'],['hp','❤️','Health Upgrade',2000,'+30 Health. Pet must be Lv 40+.']];
+S.it=Object.assign({evo:0,atk:0,def:0,hp:0,candy:0},S.it||{});S.ws=Math.min(10,Math.max(0,S.ws|0));
+const ITEMS=[['evo','💎','Evolution Stone',1000,'Raises a pet to the first level of its next stage.'],['atk','⚔️','Attack Upgrade',2000,'+4 Attack. Pet must be Lv 40+.'],['def','🛡️','Defense Upgrade',2000,'+3 Defense. Pet must be Lv 40+.'],['hp','❤️','Health Upgrade',2000,'+30 Health. Pet must be Lv 40+.'],['candy','🍬','Pet Candy',20000,'+1 level for a pet. Use it from the pet\'s profile.']];
+const WBASE=5,WCAP=15,WCOST=[10000,15000,20000,30000,40000,50000,60000,75000,90000,110000];let ucf=0;
+const wslots=()=>WBASE+Math.min(10,S.ws|0),wcount=()=>S.pets.filter(p=>p.w).length;
+const wfull=()=>{if(wcount()>=wslots()){toast(`Work slots full (${wcount()}/${wslots()}). Recall a pet or unlock a slot in Work Area → Workplace.`);return true}return false};
+function unlockSlot(){const n=S.ws|0;if(n>=10)return;const c=WCOST[n];if(S.c<c){ucf=0;return toast(`Not enough coins! Need ${c.toLocaleString()}🪙`)}if(ucf!=n+1){ucf=n+1;return toast(`Tap Unlock again to spend ${c.toLocaleString()}🪙 on slot ${WBASE+n+1}`)}ucf=0;S.c-=c;S.ws=n+1;sfx('coin');toast(`💼 Work slot ${WBASE+n+1} unlocked!`);save();hud();works()}
 const cum=L=>{let c=0;for(let i=1;i<L;i++)c+=need(i);return c};
 const defOf=p=>Math.round(4+lvl(p.xp)*1.2+stg(p)*3)+(p.u?p.u.d*3:0);
 let WS='work',IT='pets',PV=0;
@@ -511,9 +518,10 @@ function prof(p){const st=stg(p),[L,x]=lvx(p),n=need(L),u=p.u||{a:0,d:0,h:0},can
  v(`${invHead()}<button class='b s' onclick='PV=0;inv()'>◀ Back to pets</button><div class='cd' style='cursor:default;margin-top:8px'><div class='pf' onclick='zoomPet(${p.i})'>${spr(p)}</div><h3>${SP[p.s][2]} ${SP[p.s][0]} (${PN[p.p]})</h3>${formBar(p)}<div style='text-align:center;margin:8px 0 4px'>${sb('❤️ Health',hpOf(p),u.h*30)}${sb('⚔️ Attack',atkOf(p),u.a*4)}${sb('🛡️ Defense',defOf(p),u.d*3)}<div>🍖 Fullness: <b>${Math.round(p.f)}%</b></div></div>
  <div style='text-align:center;margin-bottom:8px'><div>Lv ${L} · Stage ${st} · ${p.w?'💼 Working':p.h?'🏡 At home':'📦 In storage'}</div><div class='bar' style='margin:4px auto;max-width:320px'><i style='width:${x/n*100}%'></i></div><small>XP ${x}/${n}${st<4?` · Next stage at Lv ${st*10+1}`:' · Final stage'}</small></div>
  <div><b>Manage</b><br>${p.w?`<button class='b s' onclick='irc(${p.i})'>Recall from work</button>`:`<button class='b s' onclick='ih(${p.i})'>${p.h?'📦 Store':'🏡 Move home'}</button>${st>1?`<button class='b s' onclick='iw(${p.i})'>💼 Send to work</button>`:''}<button class='b s' onclick='sell(${p.i})'>💰 Sell (${price(p)}🪙)</button>`}</div>
- <div style='margin-top:8px'><b>Items</b><br><button class='b s' ${st<4&&S.it.evo?'':'disabled'} onclick="useIt(${p.i},'evo')">💎 Evolution Stone (×${S.it.evo})${st<4?` → Lv ${st*10+1}`:''}</button><br>${ub('atk','⚔️ Attack +4')}${ub('def','🛡️ Defense +3')}${ub('hp','❤️ Health +30')}<br><small>${can?'Stat upgrades are unlocked!':'Stat upgrades unlock at Lv 40.'}</small></div></div>`)}
+ <div style='margin-top:8px'><b>Items</b><br><button class='b s' ${st<4&&S.it.evo?'':'disabled'} onclick="useIt(${p.i},'evo')">💎 Evolution Stone (×${S.it.evo})${st<4?` → Lv ${st*10+1}`:''}</button><br><button class='b s' ${S.it.candy?'':'disabled'} onclick="useIt(${p.i},'candy')">🍬 Pet Candy (×${S.it.candy}) → Lv ${L+1}</button><br>${ub('atk','⚔️ Attack +4')}${ub('def','🛡️ Defense +3')}${ub('hp','❤️ Health +30')}<br><small>${can?'Stat upgrades are unlocked!':'Stat upgrades unlock at Lv 40.'}</small></div></div>`)}
 function useIt(i,k){const p=S.pets.find(x=>x.i==i);if(!S.it[k])return toast('You have none!');
  if(k=='evo'){const st=stg(p);if(st>=4)return toast('Already at the final stage!');S.it.evo--;gain(p,cum(st*10+1)-p.xp);toast(`💎 ${SP[p.s][0]} jumped to Lv ${st*10+1}!`)}
+ else if(k=='candy'){const[L,x]=lvx(p);S.it.candy--;gain(p,need(L)-x);sfx('lvl')}
  else{if(lvl(p.xp)<40)return toast('Stat upgrades unlock at Lv 40!');S.it[k]--;p.u=p.u||{a:0,d:0,h:0};p.u[{atk:'a',def:'d',hp:'h'}[k]]++;sfx('lvl');toast('Stat upgraded!')}
  save();inv()}
 function zoomPet(i){const p=S.pets.find(x=>x.i==i);if(!p)return;const o=document.createElement('div');o.id='ov';o.onclick=()=>o.remove();o.innerHTML=`<div class='pf z'>${spr(p)}</div><small>Tap anywhere to close</small>`;document.body.append(o)}
@@ -546,7 +554,7 @@ function impSave(){let o;try{const s=$('#svt').value.trim();if(!s.startsWith('KP
  o.pets=o.pets.filter(p=>p&&[p.s,p.p,p.xp,p.i].every(Number.isFinite)&&p.s>=0&&p.s<20&&p.p>=0&&p.p<5).slice(0,999);
  o.pets.forEach(p=>{p.f=Number.isFinite(p.f)?p.f:60;p.w=p.w||0;p.h=p.h?1:0});
  o.eggs=o.eggs.filter(e=>Number.isInteger(e)&&e>=0&&e<100);o.seen=(o.seen||[]).filter(e=>Number.isInteger(e)&&e>=0&&e<100);
- S=o;S.set=Object.assign({b:.5,s:.7,p:.7,sc:1,lay:'auto',m:0},o.set||{});S.it=Object.assign({evo:0,atk:0,def:0,hp:0},o.it||{});
+ S=o;S.set=Object.assign({b:.5,s:.7,p:.7,sc:1,lay:'auto',m:0},o.set||{});S.it=Object.assign({evo:0,atk:0,def:0,hp:0,candy:0},o.it||{});S.ws=Math.min(10,Math.max(0,o.ws|0));
  S.df=Array.isArray(S.df)?S.df:[1,1,1,1,1];S.id=S.pets.reduce((a,p)=>Math.max(a,p.i+1),S.id||1);S.bg=S.bg|0;S.v3=1;S.sel=null;M={};
  save();applyDisplay();vol();toast('Save imported!');go('home')}
 /* v7 scenes + fair combat */
